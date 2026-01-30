@@ -1,4 +1,4 @@
-VERSION ?= 0.0.1
+VERSION ?= $(shell sed -n 's/^version *= *"\(.*\)"/\1/p' Cargo.toml)
 IMAGE_REPOSITORY ?= pixel365
 IMAGE_NAME ?= ratelimiter
 DOCKERFILE ?= ./Dockerfile
