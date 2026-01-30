@@ -34,13 +34,15 @@ impl CheckError {
 }
 
 impl CheckInput {
-    pub fn validate(&self, max_key_len: usize) -> Result<(), CheckError> {
+    pub fn validate(&self, max_key_length: usize) -> Result<(), CheckError> {
         if self.key.trim().is_empty() {
             return Err(CheckError::EmptyKey);
         }
 
-        if self.key.len() > max_key_len {
-            return Err(CheckError::KeyTooLong { max: max_key_len });
+        if self.key.len() > max_key_length {
+            return Err(CheckError::KeyTooLong {
+                max: max_key_length,
+            });
         }
 
         if self.limit == 0 {

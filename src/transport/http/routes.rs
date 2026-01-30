@@ -14,7 +14,9 @@ pub async fn check(
     State(app): State<App>,
     Json(req): Json<CheckInput>,
 ) -> Result<Json<CheckOutput>, (StatusCode, Json<ErrorResponse>)> {
-    req.validate(256).map_err(|e| {
+    let max_key_length = app.cfg.max_key_length.unwrap_or(256);
+
+    req.validate(max_key_length).map_err(|e| {
         (
             StatusCode::BAD_REQUEST,
             Json(ErrorResponse { error: e.as_str() }),
