@@ -1,4 +1,5 @@
 use clap::{Parser, ValueEnum};
+use std::net::IpAddr;
 
 #[derive(Debug, Clone, Parser)]
 pub struct Cli {
@@ -7,6 +8,9 @@ pub struct Cli {
 
     #[arg(long = "protocol", value_enum)]
     pub protocol: Option<Vec<Protocol>>,
+
+    #[arg(long = "http-host")]
+    pub http_host: Option<IpAddr>,
 
     #[arg(long)]
     pub http_port: Option<u16>,

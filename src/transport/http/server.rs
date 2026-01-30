@@ -4,7 +4,7 @@ use crate::transport::http::routes;
 use axum::routing::{get, post};
 use axum::Router;
 use std::io::{Error, ErrorKind};
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
 pub async fn run<F>(app: App, shutdown: F) -> std::io::Result<()>
@@ -20,11 +20,15 @@ where
         return Ok(());
     }
 
+    let Some(host) = app.cfg.http_host else {
+        return Err(invalid_cfg("http_host is not finalized"));
+    };
+
     let Some(port) = app.cfg.http_port else {
         return Err(invalid_cfg("http_port is not finalized"));
     };
 
-    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
+    let addr = SocketAddr::new(host, port);
 
     let router = Router::new()
         .route("/healthz", get(routes::health_check))
