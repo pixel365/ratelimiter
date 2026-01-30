@@ -1,4 +1,5 @@
 use crate::app::App;
+use crate::config::runtime::RuntimeConfig;
 use crate::core::fixed_window::FixedWindowLimiter;
 use crate::core::limiter::LimiterImpl;
 use crate::transport::http;
@@ -16,9 +17,10 @@ async fn main() -> std::io::Result<()> {
     let limiter = LimiterImpl::FixedWindow(FixedWindowLimiter::new());
     limiter.cleanup_task(Duration::from_secs(10));
 
-    let app = App { limiter };
+    let cfg = RuntimeConfig::new();
+    let app = App { limiter, cfg };
 
-    http::server::run("127.0.0.1:3000", app, shutdown_signal()).await
+    http::server::run(app, shutdown_signal()).await
 }
 
 async fn shutdown_signal() {
