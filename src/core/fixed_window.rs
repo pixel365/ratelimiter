@@ -4,6 +4,7 @@ use dashmap::DashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
+use tokio_util::sync::CancellationToken;
 
 #[derive(Clone)]
 pub struct FixedWindowLimiter {
@@ -29,25 +30,32 @@ impl FixedWindowLimiter {
         }
     }
 
-    pub fn cleanup(&self, interval: Duration) {
+    pub fn cleanup(&self, interval: Duration, stop: CancellationToken) {
         let inner = self.inner.clone();
 
         tokio::spawn(async move {
             loop {
-                sleep(interval).await;
-                let now = Instant::now();
-                let mut removed = 0;
-
-                inner.map.retain(|_, entry| {
-                    let keep = entry.window_end > now;
-                    if !keep {
-                        removed += 1;
+                tokio::select! {
+                    _ = stop.cancelled() => {
+                        tracing::debug!("fixed window cleanup task stopped");
+                        break;
                     }
-                    keep
-                });
+                    _ = sleep(interval) => {
+                        let now = Instant::now();
+                        let mut removed = 0;
 
-                if removed > 0 {
-                    tracing::debug!("Removed {} entries", removed);
+                        inner.map.retain(|_, entry| {
+                            let keep = entry.window_end > now;
+                            if !keep {
+                                removed += 1;
+                            }
+                            keep
+                        });
+
+                        if removed > 0 {
+                            tracing::debug!("Removed {} entries", removed);
+                        }
+                    }
                 }
             }
         });

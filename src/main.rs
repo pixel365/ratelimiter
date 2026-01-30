@@ -4,6 +4,7 @@ use crate::core::fixed_window::FixedWindowLimiter;
 use crate::core::limiter::LimiterImpl;
 use crate::transport::http;
 use std::time::Duration;
+use tokio_util::sync::CancellationToken;
 
 mod app;
 mod config;
@@ -14,13 +15,23 @@ mod transport;
 async fn main() -> std::io::Result<()> {
     tracing_subscriber::fmt::init();
 
+    let stop = CancellationToken::new();
+
     let limiter = LimiterImpl::FixedWindow(FixedWindowLimiter::new());
-    limiter.cleanup_task(Duration::from_secs(10));
+    limiter.cleanup_task(Duration::from_secs(10), stop.clone());
 
     let cfg = RuntimeConfig::new();
     let app = App { limiter, cfg };
 
-    http::server::run(app, shutdown_signal()).await
+    let shutdown = {
+        let stop = stop.clone();
+        async move {
+            shutdown_signal().await;
+            stop.cancel();
+        }
+    };
+
+    http::server::run(app, shutdown).await
 }
 
 async fn shutdown_signal() {

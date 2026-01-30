@@ -1,6 +1,7 @@
 use crate::core::fixed_window::FixedWindowLimiter;
 use crate::core::types::{CheckInput, CheckOutput};
 use std::time::Duration;
+use tokio_util::sync::CancellationToken;
 
 pub trait Limiter: Send + Sync + 'static {
     fn check(&self, input: CheckInput) -> CheckOutput;
@@ -12,9 +13,9 @@ pub enum LimiterImpl {
 }
 
 impl LimiterImpl {
-    pub fn cleanup_task(&self, interval: Duration) {
+    pub fn cleanup_task(&self, interval: Duration, stop: CancellationToken) {
         match self {
-            LimiterImpl::FixedWindow(limiter) => limiter.cleanup(interval),
+            LimiterImpl::FixedWindow(limiter) => limiter.cleanup(interval, stop),
         }
     }
 }
