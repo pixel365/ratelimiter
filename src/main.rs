@@ -2,7 +2,7 @@ use crate::app::App;
 use crate::config::runtime::RuntimeConfig;
 use crate::core::fixed_window::FixedWindowLimiter;
 use crate::core::limiter::LimiterImpl;
-use crate::transport::http;
+use crate::transport::{http, tcp};
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
@@ -23,15 +23,31 @@ async fn main() -> std::io::Result<()> {
     let cfg = RuntimeConfig::new();
     let app = App { limiter, cfg };
 
-    let shutdown = {
+    let http_shutdown = {
         let stop = stop.clone();
         async move {
-            shutdown_signal().await;
-            stop.cancel();
+            stop.cancelled().await;
         }
     };
 
-    http::server::run(app, shutdown).await
+    let http_runner = tokio::spawn({
+        let app = app.clone();
+        async move { http::server::run(app, http_shutdown).await }
+    });
+
+    let tcp_stop = stop.clone();
+    let tcp_runner = tokio::spawn({
+        let app = app.clone();
+        async move { tcp::server::run(app, tcp_stop).await }
+    });
+
+    shutdown_signal().await;
+    stop.cancel();
+
+    let _ = http_runner.await;
+    let _ = tcp_runner.await;
+
+    Ok(())
 }
 
 async fn shutdown_signal() {
