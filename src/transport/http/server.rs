@@ -1,9 +1,9 @@
 use crate::app::App;
 use crate::config::cli::Protocol;
+use crate::config::helpers::invalid_cfg;
 use crate::transport::http::routes;
 use axum::routing::{get, post};
 use axum::Router;
-use std::io::{Error, ErrorKind};
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
@@ -39,8 +39,4 @@ where
     axum::serve(listener, router)
         .with_graceful_shutdown(shutdown)
         .await
-}
-
-fn invalid_cfg(msg: &'static str) -> Error {
-    Error::new(ErrorKind::InvalidInput, msg)
 }
