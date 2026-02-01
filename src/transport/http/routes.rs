@@ -1,4 +1,4 @@
-use crate::core::constants::DEFAULT_KEY_LENGTH;
+use crate::core::defaults::DEFAULT_MAX_KEY_LENGTH;
 use crate::core::limiter::Limiter;
 use crate::core::types::{CheckInput, CheckOutput};
 use crate::transport::http::types::ErrorResponse;
@@ -15,7 +15,7 @@ pub async fn check(
     State(app): State<App>,
     Json(req): Json<CheckInput>,
 ) -> Result<Json<CheckOutput>, (StatusCode, Json<ErrorResponse>)> {
-    let max_key_length = app.cfg.max_key_length.unwrap_or(DEFAULT_KEY_LENGTH);
+    let max_key_length = app.cfg.max_key_length.unwrap_or(DEFAULT_MAX_KEY_LENGTH);
 
     req.validate(max_key_length).map_err(|e| {
         (

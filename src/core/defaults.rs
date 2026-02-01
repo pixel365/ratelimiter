@@ -1,0 +1,4 @@
+pub const DEFAULT_MAX_KEY_LENGTH: u32 = 256;
+
+pub const DEFAULT_HTTP_PORT: u16 = 3000;
+pub const DEFAULT_TCP_PORT: u16 = 3001;

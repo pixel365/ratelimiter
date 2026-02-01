@@ -3,21 +3,21 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Deserialize)]
 pub struct CheckInput {
     pub key: String,
-    pub limit: usize,
+    pub limit: u32,
     pub window_ms: u64,
 }
 
 #[derive(Debug, Clone, Copy, Serialize)]
 pub struct CheckOutput {
     pub allowed: bool,
-    pub remaining: usize,
+    pub remaining: u32,
     pub reset_ms: u64,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum CheckError {
     EmptyKey,
-    KeyTooLong { max: usize },
+    KeyTooLong { max: u32 },
     LimitZero,
     WindowZero,
 }
@@ -34,12 +34,13 @@ impl CheckError {
 }
 
 impl CheckInput {
-    pub fn validate(&self, max_key_length: usize) -> Result<(), CheckError> {
+    pub fn validate(&self, max_key_length: u32) -> Result<(), CheckError> {
         if self.key.trim().is_empty() {
             return Err(CheckError::EmptyKey);
         }
 
-        if self.key.len() > max_key_length {
+        let key_len: u32 = self.key.len() as u32;
+        if key_len > max_key_length {
             return Err(CheckError::KeyTooLong {
                 max: max_key_length,
             });

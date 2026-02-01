@@ -1,11 +1,11 @@
 use crate::config::cli::{Cli, Protocol};
-use crate::core::constants::{DEFAULT_HTTP_PORT, DEFAULT_KEY_LENGTH, DEFAULT_TCP_PORT};
+use crate::core::defaults::{DEFAULT_HTTP_PORT, DEFAULT_MAX_KEY_LENGTH, DEFAULT_TCP_PORT};
 use clap::Parser;
 use std::net::{IpAddr, Ipv4Addr};
 
 #[derive(Debug, Clone, Default)]
 pub struct RuntimeConfig {
-    pub max_key_length: Option<usize>,
+    pub max_key_length: Option<u32>,
     pub protocol: Option<Vec<Protocol>>,
     pub http_host: Option<IpAddr>,
     pub http_port: Option<u16>,
@@ -51,7 +51,7 @@ impl RuntimeConfig {
     }
 
     fn finalize(mut self) -> RuntimeConfig {
-        let max_key_length = self.max_key_length.unwrap_or(DEFAULT_KEY_LENGTH);
+        let max_key_length = self.max_key_length.unwrap_or(DEFAULT_MAX_KEY_LENGTH);
 
         let protocol = self.protocol.unwrap_or_default();
         let mut unique_protocol: Vec<Protocol> = Vec::with_capacity(protocol.len());

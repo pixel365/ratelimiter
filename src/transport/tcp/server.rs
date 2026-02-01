@@ -1,11 +1,8 @@
 use crate::app::App;
 use crate::config::cli::Protocol;
 use crate::config::helpers::invalid_cfg;
-use crate::core::{
-    constants::{DEFAULT_KEY_LENGTH, PONG},
-    limiter::Limiter,
-};
-use crate::transport::tcp::protocol::{parse_command, Command};
+use crate::core::{defaults::DEFAULT_MAX_KEY_LENGTH, limiter::Limiter};
+use crate::transport::tcp::protocol::{parse_command, CommandResponse};
 use std::net::SocketAddr;
 use tokio::io::AsyncWriteExt;
 use tokio::{
@@ -71,9 +68,9 @@ async fn handle_conn(stream: tokio::net::TcpStream, app: App, stop: Cancellation
                 let Some(line) = opt else {break;};
 
                 let response = match parse_command(&line) {
-                    Ok(Command::Pong) => format!("{PONG}\n"),
-                    Ok(Command::Check(input)) => {
-                        let max_key_length = app.cfg.max_key_length.unwrap_or(DEFAULT_KEY_LENGTH);
+                    Ok(CommandResponse::Pong) => "PONG\n".to_string(),
+                    Ok(CommandResponse::Check(input)) => {
+                        let max_key_length = app.cfg.max_key_length.unwrap_or(DEFAULT_MAX_KEY_LENGTH);
 
                         match input.validate(max_key_length) {
                             Err(e) => format!("ERR {e:?}\n"),

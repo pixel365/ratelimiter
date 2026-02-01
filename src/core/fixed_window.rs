@@ -13,7 +13,7 @@ pub struct FixedWindowLimiter {
 
 #[derive(Debug, Clone)]
 struct Entry {
-    count: usize,
+    count: u32,
     window_end: Instant,
 }
 

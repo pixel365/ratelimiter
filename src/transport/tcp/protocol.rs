@@ -1,12 +1,14 @@
-use crate::core::constants::{CHECK, PING};
 use crate::core::types::CheckInput;
 
-pub enum Command {
+pub const CHECK: &str = "CHECK";
+pub const PING: &str = "PING";
+
+pub enum CommandResponse {
     Check(CheckInput),
     Pong,
 }
 
-pub fn parse_command(line: &str) -> Result<Command, String> {
+pub fn parse_command(line: &str) -> Result<CommandResponse, String> {
     let parts: Vec<&str> = line.trim().split_whitespace().collect();
 
     if parts.is_empty() {
@@ -18,7 +20,7 @@ pub fn parse_command(line: &str) -> Result<Command, String> {
             if parts.len() != 1 {
                 return Err(format!("invalid command: {}", line));
             }
-            Ok(Command::Pong)
+            Ok(CommandResponse::Pong)
         }
         CHECK => {
             if parts.len() != 4 {
@@ -26,10 +28,10 @@ pub fn parse_command(line: &str) -> Result<Command, String> {
             }
 
             let key = parts[1].to_string();
-            let limit = parts[2].parse::<usize>().map_err(|_| "invalid limit")?;
-            let window_ms = parts[3].parse::<u64>().map_err(|_| "invalid window")?;
+            let limit = parts[2].parse::<u32>().map_err(|_| "invalid limit")?;
+            let window_ms = parts[3].parse::<u64>().map_err(|_| "invalid window size")?;
 
-            Ok(Command::Check(CheckInput {
+            Ok(CommandResponse::Check(CheckInput {
                 key,
                 limit,
                 window_ms,

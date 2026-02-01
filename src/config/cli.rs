@@ -4,7 +4,7 @@ use std::net::IpAddr;
 #[derive(Debug, Clone, Parser)]
 pub struct Cli {
     #[arg(long = "max-key-length")]
-    pub max_key_length: Option<usize>,
+    pub max_key_length: Option<u32>,
 
     #[arg(long = "protocol", value_enum)]
     pub protocol: Option<Vec<Protocol>>,
